@@ -2,9 +2,10 @@ import requests
 import csv
 import json
 from datetime import datetime
+import time
 from dateutil.parser import parse
-from dotenv import load_dotenv
 import random
+from dotenv import load_dotenv
 import os
 
 load_dotenv()
@@ -17,11 +18,19 @@ botID = os.environ.get("botID")
 
 emojis = ['\U0001F382', '\U0001F973', '\U0001F389', '\U0001F388', '\U0001F38A']
 happyBirthdayMessage = 'Happy Birthday ' + emojis[random.randint(0, len(emojis) - 1)]
+#startTime = datetime.now()
+last_day = datetime.now().day
 
 with open('Roster.csv') as csv_file:
     lineCount = 0
     birthdays = []
     csv_reader = csv.reader(csv_file, delimiter = ',')
+    # Cron job runs a minute before midnight. This while loop checks if it has turned to next day for more precise timing.
+    while True:
+        day = datetime.now().day
+        if day != last_day:
+            break
+        time.sleep(0.001)
     for row in csv_reader:
         if lineCount > 0:
             try:
@@ -63,6 +72,7 @@ with open('Roster.csv') as csv_file:
     if len(birthdays) > 0:
         url = "https://api.groupme.com/v3/bots/post"
         response = requests.post(url, json=obj)
-        print(response.status_code)
+#        print(datetime.now() - startTime)
+#        print(response.status_code)
     else:
-        print("No birthdays today", datetime.now()
+        print("[" + str(datetime.now()) +  "] " + "No birthdays today")
